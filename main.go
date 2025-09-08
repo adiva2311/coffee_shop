@@ -1,8 +1,8 @@
 package main
 
 import (
+	"coffee_shop/routes"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -16,10 +16,11 @@ func main() {
 	}
 
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
 
+	// ROUTES
+	routes.ApiRoutes(e)
+
+	// Start server
 	api_host := os.Getenv("API_HOST")
 	api_port := os.Getenv("API_PORT")
 	e.Logger.Fatal(e.Start(api_host + ":" + api_port))

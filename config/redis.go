@@ -8,10 +8,12 @@ import (
 
 var ctx = context.Background()
 
-func RedisClient() {
+func RedisClient() (*redis.Client, error) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
+
+	return rdb, rdb.Ping(ctx).Err()
 }
