@@ -28,7 +28,7 @@ func InitDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	log.Default().Println("Database Connected Succesfully and Migration Completed")
+	log.Default().Println("Database Connected Succesfully")
 
 	sqlDB, _ := db.DB()
 	sqlDB.SetMaxOpenConns(10)

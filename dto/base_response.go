@@ -1,4 +1,4 @@
-package utils
+package dto
 
 type ApiResponse struct {
 	Status  int         `json:"status"`

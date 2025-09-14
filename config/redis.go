@@ -1,12 +1,8 @@
 package config
 
 import (
-	"context"
-
 	"github.com/redis/go-redis/v9"
 )
-
-var ctx = context.Background()
 
 func RedisClient() (*redis.Client, error) {
 	rdb := redis.NewClient(&redis.Options{
@@ -15,5 +11,5 @@ func RedisClient() (*redis.Client, error) {
 		DB:       0,  // use default DB
 	})
 
-	return rdb, rdb.Ping(ctx).Err()
+	return rdb, nil
 }
