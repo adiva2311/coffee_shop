@@ -11,7 +11,7 @@ type User struct {
 	Name        string `gorm:"not null" json:"name"`
 	Email       string `gorm:"unique;not null" json:"email"`
 	Password    string `gorm:"not null" json:"password"`
-	Role        string `gorm:"not null;default:customer" json:"role"`
+	Role        string `gorm:"not null;default:customer" json:"role"` // enum('admin','cashier','customer')
 	PhoneNumber string `gorm:"unique;not null" json:"phone_number"`
 }
 

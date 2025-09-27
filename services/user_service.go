@@ -1,11 +1,15 @@
 package services
 
 import (
+	"coffee_shop/config"
 	"coffee_shop/dto"
 	"coffee_shop/models"
 	"coffee_shop/repositories"
 	"coffee_shop/utils"
+	"context"
 	"errors"
+	"log"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -13,11 +17,13 @@ import (
 type UserService interface {
 	// Define user-related business logic methods here
 	Register(registerRequest models.User) (dto.RegisterResponse, error)
-	Login(email, password string) (dto.LoginResponse, error)
+	Login(request dto.LoginRequest) (dto.LoginResponse, error)
 	UpdateUser(user_id uint, user models.User) (models.User, error)
 	DeleteUser(user_id uint) (int, error)
 	GetUserByID(user_id uint) ([]models.User, error)
 }
+
+var ctx = context.Background()
 
 type UserServiceImpl struct {
 	userRepo repositories.UserRepository
@@ -53,19 +59,41 @@ func (u *UserServiceImpl) Register(registerRequest models.User) (dto.RegisterRes
 }
 
 // Login implements UserService.
-func (u *UserServiceImpl) Login(email string, password string) (dto.LoginResponse, error) {
-	// // Check if the email exists
-	// user, err := u.userRepo.CheckEmailValid(email)
-	// if err != nil {
-	// 	return dto.LoginResponse{}, errors.New("invalid email or password")
-	// }
+func (u *UserServiceImpl) Login(request dto.LoginRequest) (dto.LoginResponse, error) {
+	// Check if the email exists
+	user, err := u.userRepo.CheckEmailValid(request.Email)
+	if err != nil {
+		return dto.LoginResponse{}, errors.New("invalid email")
+	}
 
-	// // Check if the password is correct
-	// if !utils.CheckPasswordHash(password, user.Password) {
-	// 	return dto.LoginResponse{}, errors.New("invalid email or password")
-	// }
+	// Check if the password is correct
+	if !utils.CheckPasswordHash(request.Password, user.Password) {
+		return dto.LoginResponse{}, errors.New("invalid password")
+	}
 
-	panic("unimplemented")
+	// Generate JWT token
+	accessToken, err := utils.GenerateJWT(user.ID, user.Email, user.Role)
+	if err != nil {
+		return dto.LoginResponse{}, err
+	}
+
+	refresherToken, err := utils.GenerateRefresherJWT(user.ID, user.Email, user.Role)
+	if err != nil {
+		return dto.LoginResponse{}, err
+	}
+
+	// Save Refresher Token to Redis
+	rdb, err := config.RedisClient()
+	if err != nil {
+		log.Fatal("Failed Connect to Redis")
+	}
+
+	err = rdb.Set(ctx, user.Email, refresherToken, 7*24*time.Hour).Err()
+	if err != nil {
+		return dto.LoginResponse{}, errors.New("failed to save refresher token to redis")
+	}
+
+	return dto.ToLoginResponse(*user, accessToken, refresherToken), nil
 }
 
 // DeleteUser implements UserService.

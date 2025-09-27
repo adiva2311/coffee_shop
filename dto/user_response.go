@@ -19,19 +19,21 @@ func ToRegisterResponse(user models.User) RegisterResponse {
 }
 
 type LoginResponse struct {
-	Name        string `json:"name"`
-	Email       string `json:"email"`
-	Role        string `json:"role"`
-	PhoneNumber string `json:"phone_number"`
-	Token       string `json:"token"`
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	Role           string `json:"role"`
+	PhoneNumber    string `json:"phone_number"`
+	AccessToken    string `json:"access_token"`
+	RefresherToken string `json:"refresher_token"`
 }
 
-func ToLoginResponse(user models.User, token string) LoginResponse {
+func ToLoginResponse(user models.User, accessToken string, refresherToken string) LoginResponse {
 	return LoginResponse{
-		Name:        user.Name,
-		Email:       user.Email,
-		Role:        user.Role,
-		PhoneNumber: user.PhoneNumber,
-		Token:       token,
+		Name:           user.Name,
+		Email:          user.Email,
+		Role:           user.Role,
+		PhoneNumber:    user.PhoneNumber,
+		AccessToken:    accessToken,
+		RefresherToken: refresherToken,
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"coffee_shop/config"
 	"coffee_shop/controllers"
 	"coffee_shop/dto"
+	"coffee_shop/middlewares"
 	"context"
 	"log"
 	"net/http"
@@ -52,7 +53,11 @@ func ApiRoutes(e *echo.Echo) {
 	UserController := controllers.NewUserController(db)
 	g.POST("/register", UserController.Register)
 	g.POST("/login", UserController.Login)
+	g.POST("/logout", UserController.Logout, middlewares.JWTMiddleware)
 	// g.PUT("/users/:user_id", UserController.UpdateUser)
 	// g.DELETE("/users/:user_id", UserController.DeleteUser)
 	// g.GET("/users/:user_id", UserController.GetUserByID)
+
+	// REFRESH TOKEN
+	g.POST("/refresh-token", UserController.RefreshToken)
 }
