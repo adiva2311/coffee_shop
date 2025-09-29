@@ -42,7 +42,7 @@ func (u *userRepository) CheckEmailExists(email string) (bool, error) {
 
 // DeleteUser implements UserRepository.
 func (u *userRepository) DeleteUser(user_id uint) (int, error) {
-	result := u.DB.Where("id = ?", user_id).Delete(&models.User{})
+	result := u.DB.Where("id = ?", user_id).Where("deleted_at IS NULL").Delete(&models.User{})
 	rowsAffected := result.RowsAffected
 	if rowsAffected == 0 {
 		return 0, gorm.ErrRecordNotFound
@@ -53,7 +53,7 @@ func (u *userRepository) DeleteUser(user_id uint) (int, error) {
 // GetUserByID implements UserRepository.
 func (u *userRepository) GetUserByID(user_id uint) (*models.User, error) {
 	var user models.User
-	result := u.DB.Where("id = ?", user_id).First(&user)
+	result := u.DB.Where("id = ?", user_id).Where("deleted_at IS NULL").First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -67,7 +67,7 @@ func (u *userRepository) RegisterUser(user *models.User) error {
 
 // UpdateUser implements UserRepository.
 func (u *userRepository) UpdateUser(user_id uint, user *models.User) error {
-	result := u.DB.Where("id = ?", user_id).Updates(user)
+	result := u.DB.Where("id = ?", user_id).Where("deleted_at IS NULL").Updates(user)
 	if result.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}

@@ -18,9 +18,9 @@ type UserService interface {
 	// Define user-related business logic methods here
 	Register(registerRequest models.User) (dto.RegisterResponse, error)
 	Login(request dto.LoginRequest) (dto.LoginResponse, error)
-	UpdateUser(user_id uint, user models.User) (models.User, error)
+	UpdateUser(user_id uint, request models.User) (dto.UpdateUserResponse, error)
 	DeleteUser(user_id uint) (int, error)
-	GetUserByID(user_id uint) ([]models.User, error)
+	GetUserByID(user_id uint) (dto.GetUserByIDResponse, error)
 }
 
 var ctx = context.Background()
@@ -98,17 +98,43 @@ func (u *UserServiceImpl) Login(request dto.LoginRequest) (dto.LoginResponse, er
 
 // DeleteUser implements UserService.
 func (u *UserServiceImpl) DeleteUser(user_id uint) (int, error) {
-	panic("unimplemented")
+	rowsAffected, err := u.userRepo.DeleteUser(user_id)
+	if err != nil {
+		return 0, errors.New("failed to delete user: " + err.Error())
+	}
+	return rowsAffected, nil
 }
 
 // GetUserByID implements UserService.
-func (u *UserServiceImpl) GetUserByID(user_id uint) ([]models.User, error) {
-	panic("unimplemented")
+func (u *UserServiceImpl) GetUserByID(user_id uint) (dto.GetUserByIDResponse, error) {
+	userInfo, err := u.userRepo.GetUserByID(user_id)
+	if err != nil {
+		return dto.GetUserByIDResponse{}, errors.New("user not found : " + err.Error())
+	}
+	return dto.ToGetUserByIDResponse(*userInfo), nil
 }
 
 // UpdateUser implements UserService.
-func (u *UserServiceImpl) UpdateUser(user_id uint, user models.User) (models.User, error) {
-	panic("unimplemented")
+func (u *UserServiceImpl) UpdateUser(user_id uint, request models.User) (dto.UpdateUserResponse, error) {
+	// Hash the password
+	hashedPassword, err := utils.HashPassword(request.Password)
+	if err != nil {
+		return dto.UpdateUserResponse{}, errors.New("failed to hash password")
+	}
+
+	user := &models.User{
+		Name:        request.Name,
+		Password:    hashedPassword,
+		Role:        request.Role,
+		PhoneNumber: request.PhoneNumber,
+	}
+
+	err = u.userRepo.UpdateUser(user_id, user)
+	if err != nil {
+		return dto.UpdateUserResponse{}, errors.New("failed to update user: " + err.Error())
+	}
+
+	return dto.ToUpdateUserResponse(*user), nil
 }
 
 func NewUserService(db *gorm.DB) UserService {

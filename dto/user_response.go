@@ -37,3 +37,35 @@ func ToLoginResponse(user models.User, accessToken string, refresherToken string
 		RefresherToken: refresherToken,
 	}
 }
+
+type UpdateUserResponse struct {
+	Name        string `json:"name"`
+	Role        string `json:"role"`
+	PhoneNumber string `json:"phone_number"`
+}
+
+func ToUpdateUserResponse(user models.User) UpdateUserResponse {
+	return UpdateUserResponse{
+		Name:        user.Name,
+		Role:        user.Role,
+		PhoneNumber: user.PhoneNumber,
+	}
+}
+
+type GetUserByIDResponse struct {
+	ID          uint   `json:"id"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	Role        string `json:"role"`
+	PhoneNumber string `json:"phone_number"`
+}
+
+func ToGetUserByIDResponse(user models.User) GetUserByIDResponse {
+	return GetUserByIDResponse{
+		ID:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		Role:        user.Role,
+		PhoneNumber: user.PhoneNumber,
+	}
+}

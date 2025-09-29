@@ -54,9 +54,9 @@ func ApiRoutes(e *echo.Echo) {
 	g.POST("/register", UserController.Register)
 	g.POST("/login", UserController.Login)
 	g.POST("/logout", UserController.Logout, middlewares.JWTMiddleware)
-	// g.PUT("/users/:user_id", UserController.UpdateUser)
-	// g.DELETE("/users/:user_id", UserController.DeleteUser)
-	// g.GET("/users/:user_id", UserController.GetUserByID)
+	g.PATCH("/user/update", UserController.UpdateUser, middlewares.JWTMiddleware)
+	g.DELETE("/user/delete", UserController.DeleteUser, middlewares.JWTMiddleware)
+	g.GET("/user/detail", UserController.GetUserByID, middlewares.JWTMiddleware)
 
 	// REFRESH TOKEN
 	g.POST("/refresh-token", UserController.RefreshToken)

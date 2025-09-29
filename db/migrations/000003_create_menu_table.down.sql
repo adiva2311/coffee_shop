@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS menu;
+DROP TABLE menu;

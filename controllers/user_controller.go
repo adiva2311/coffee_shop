@@ -132,15 +132,118 @@ func (u *UserControllerImpl) Logout(c echo.Context) error {
 }
 
 func (u *UserControllerImpl) UpdateUser(c echo.Context) error {
-	panic("not implemented") // TODO: Implement
+	// Get user_id from JWT token
+	userID := c.Get("user_id").(uint)
+	log.Println("User ID from token:", userID)
+	if userID == 0 {
+		return c.JSON(http.StatusBadRequest, dto.ApiResponse{
+			Status:  http.StatusBadRequest,
+			Message: "User ID is required",
+		})
+	}
+
+	// Get All data from request body
+	userPayload := new(dto.UpdateUserRequest)
+	err := c.Bind(userPayload)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ApiResponse{
+			Status:  http.StatusBadRequest,
+			Message: "Invalid request payload : " + err.Error(),
+		})
+	}
+
+	// Capitalize the first letter of the Name
+	nameStr := strings.ToTitle(userPayload.Name)
+
+	// Set default value for PhoneNumber if not provided
+	if userPayload.PhoneNumber == "" {
+		userPayload.PhoneNumber = "XXXXXX"
+	}
+
+	// Call the service to update the user
+	_, err = u.UserService.UpdateUser(userID, models.User{
+		Name:        nameStr,
+		Password:    userPayload.Password,
+		Role:        userPayload.Role,
+		PhoneNumber: userPayload.PhoneNumber,
+	})
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ApiResponse{
+			Status:  http.StatusBadRequest,
+			Message: "Failed to update user : " + err.Error(),
+		})
+	}
+
+	// Invalidate the user's tokens by logging them out
+	u.Logout(c)
+
+	apiResponse := dto.ApiResponse{
+		Status:  http.StatusOK,
+		Message: "User updated successfully",
+	}
+
+	return c.JSON(http.StatusOK, apiResponse)
 }
 
 func (u *UserControllerImpl) DeleteUser(c echo.Context) error {
-	panic("not implemented") // TODO: Implement
+	// Get user_id from JWT token
+	userID := c.Get("user_id").(uint)
+	log.Println("User ID from token:", userID)
+	if userID == 0 {
+		return c.JSON(http.StatusBadRequest, dto.ApiResponse{
+			Status:  http.StatusBadRequest,
+			Message: "User ID is required",
+		})
+	}
+
+	// Call the service to delete the user
+	_, err := u.UserService.DeleteUser(userID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ApiResponse{
+			Status:  http.StatusBadRequest,
+			Message: "Failed to delete user : " + err.Error(),
+		})
+	}
+
+	// Invalidate the user's tokens by logging them out
+	u.Logout(c)
+
+	// Return success response
+	apiResponse := dto.ApiResponse{
+		Status:  http.StatusOK,
+		Message: "User deleted successfully",
+	}
+
+	return c.JSON(http.StatusOK, apiResponse)
 }
 
 func (u *UserControllerImpl) GetUserByID(c echo.Context) error {
-	panic("not implemented") // TODO: Implement
+	// Get user_id from JWT token
+	userID := c.Get("user_id").(uint)
+	log.Println("User ID from token:", userID)
+	if userID == 0 {
+		return c.JSON(http.StatusBadRequest, dto.ApiResponse{
+			Status:  http.StatusBadRequest,
+			Message: "User ID is required",
+		})
+	}
+
+	result, err := u.UserService.GetUserByID(userID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, dto.ApiResponse{
+			Status:  http.StatusNotFound,
+			Message: "User not found : " + err.Error(),
+		})
+	}
+
+	apiResponse := dto.ApiResponse{
+		Status:  http.StatusOK,
+		Message: "User retrieved successfully",
+		Data:    result,
+	}
+
+	return c.JSON(http.StatusOK, apiResponse)
 }
 
 func (u *UserControllerImpl) RefreshToken(c echo.Context) error {
