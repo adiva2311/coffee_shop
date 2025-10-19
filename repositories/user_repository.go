@@ -23,7 +23,7 @@ type userRepository struct {
 // CheckEmailValid implements UserRepository.
 func (u *userRepository) CheckEmailValid(email string) (*models.User, error) {
 	var user models.User
-	result := u.DB.Where("email = ?", email).First(&user)
+	result := u.DB.Where("email = ?", email).Where("deleted_at is NULL").First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -33,7 +33,7 @@ func (u *userRepository) CheckEmailValid(email string) (*models.User, error) {
 // CheckEmailExists implements UserRepository.
 func (u *userRepository) CheckEmailExists(email string) (bool, error) {
 	var count int64
-	result := u.DB.Model(&models.User{}).Where("email = ?", email).Count(&count)
+	result := u.DB.Model(&models.User{}).Where("email = ?", email).Where("deleted_at is NULL").Count(&count)
 	if result.Error != nil {
 		return false, result.Error
 	}
