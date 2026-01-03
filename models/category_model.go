@@ -8,7 +8,7 @@ type Category struct {
 	// UpdatedAt time.Time
 	// DeletedAt DeletedAt `gorm:"index"`
 	gorm.Model
-	CategoryName string `gorm:"not null" json:"category_name"`
+	CategoriesName string `gorm:"not null" json:"categories_name"`
 }
 
 func (Category) TableName() string {

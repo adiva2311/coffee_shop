@@ -30,6 +30,9 @@ func InitDB() (*gorm.DB, error) {
 
 	log.Default().Println("Database Connected Succesfully")
 
+	db = db.Debug()
+
+	// Set connection pool settings
 	sqlDB, _ := db.DB()
 	sqlDB.SetMaxOpenConns(10)
 	sqlDB.SetMaxIdleConns(5)

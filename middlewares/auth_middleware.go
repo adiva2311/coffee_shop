@@ -14,7 +14,7 @@ func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		authHeader := c.Request().Header.Get("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
 			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"message": "Missing or invalid token",
+				"message": "Missing or invalid token -> Unauthorized",
 			})
 		}
 

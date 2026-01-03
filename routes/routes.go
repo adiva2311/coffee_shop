@@ -60,4 +60,12 @@ func ApiRoutes(e *echo.Echo) {
 
 	// REFRESH TOKEN
 	g.POST("/refresh-token", UserController.RefreshToken)
+
+	// CATEGORY ROUTES
+	CategoryController := controllers.NewCategoryController(db)
+	g.GET("/categories", CategoryController.GetAllCategories)
+	g.POST("/categories", CategoryController.CreateCategory, middlewares.JWTMiddleware)
+	g.GET("/categories/:id", CategoryController.GetCategoryByID, middlewares.JWTMiddleware)
+	g.PUT("/categories/:id", CategoryController.UpdateCategory, middlewares.JWTMiddleware)
+	g.DELETE("/categories/:id", CategoryController.DeleteCategory, middlewares.JWTMiddleware)
 }
