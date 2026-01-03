@@ -84,8 +84,10 @@ func (c *CategoryServiceImpl) UpdateCategory(id uint, categoryReq models.Categor
 		return dto.CategoryResponse{}, errors.New("category already exists: " + findCategory.CategoriesName)
 	}
 
+	// Update category fields
 	category.CategoriesName = categoryReq.CategoriesName
 
+	// Save updated category
 	err = c.CategoryRepo.UpdateCategory(&category)
 	if err != nil {
 		return dto.CategoryResponse{}, errors.New("failed to update category: " + err.Error())
