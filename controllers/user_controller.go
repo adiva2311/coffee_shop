@@ -141,6 +141,7 @@ func (u *UserControllerImpl) Logout(c echo.Context) error {
 			Message: "Unauthorized",
 		})
 	}
+
 	// Delete tokens from Redis
 	rdb, err := config.RedisClient()
 	if err != nil {
@@ -149,6 +150,8 @@ func (u *UserControllerImpl) Logout(c echo.Context) error {
 			Message: "Failed to connect to Redis: " + err.Error(),
 		})
 	}
+
+	// Delete Access Token from Redis
 	err = rdb.Del(ctx, userEmail).Err()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ApiResponse{
@@ -157,6 +160,7 @@ func (u *UserControllerImpl) Logout(c echo.Context) error {
 		})
 	}
 
+	// Delete Refresh Token from Redis
 	err = rdb.Del(ctx, "refresh:"+userEmail).Err()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ApiResponse{
@@ -295,6 +299,15 @@ func (u *UserControllerImpl) RefreshToken(c echo.Context) error {
 		})
 	}
 
+	// Connect to Redis
+	rdb, err := config.RedisClient()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ApiResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "Failed to connect to Redis: " + err.Error(),
+		})
+	}
+
 	// Parse refresh token
 	token, err := jwt.Parse(req.RefresherToken, func(token *jwt.Token) (interface{}, error) {
 		return utils.GetSecretKey(), nil
@@ -308,10 +321,41 @@ func (u *UserControllerImpl) RefreshToken(c echo.Context) error {
 	email, _ := claims["email"].(string)
 	role, _ := claims["role"].(string)
 
+	// Check if refresh token exists in Redis
+	exist, err := rdb.Exists(ctx, "refresh:"+email).Result()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ApiResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "Failed to check refresh token in Redis: " + err.Error(),
+		})
+	}
+	if exist == 0 {
+		return c.JSON(http.StatusUnauthorized, dto.ApiResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "Already LogOut || Refresh token not found",
+		})
+	}
+
+	// Delete old access token from Redis
+	err = rdb.Del(ctx, email).Err()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ApiResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "Failed to logout: " + err.Error(),
+		})
+	}
+
+	// Generate new access token
 	newAccessToken, _ := utils.GenerateJWT(uint(userID), email, role)
 
 	// Store new access token in Redis
-	
+	err = rdb.Set(ctx, email, newAccessToken, time.Minute*15).Err()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ApiResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "Failed to Store Access Token to Redis: " + err.Error(),
+		})
+	}
 
 	apiResponse := dto.ApiResponse{
 		Status:  http.StatusOK,
