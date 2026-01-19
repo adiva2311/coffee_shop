@@ -68,4 +68,12 @@ func ApiRoutes(e *echo.Echo) {
 	g.GET("/categories/:id", CategoryController.GetCategoryByID, middlewares.JWTMiddleware)
 	g.PUT("/categories/:id", CategoryController.UpdateCategory, middlewares.JWTMiddleware)
 	g.DELETE("/categories/:id", CategoryController.DeleteCategory, middlewares.JWTMiddleware)
+
+	// MENU ROUTES
+	MenuController := controllers.NewMenuController(db)
+	g.GET("/menu", MenuController.GetAllMenus)
+	g.POST("/menu", MenuController.CreateMenu, middlewares.JWTMiddleware)
+	g.GET("/menu/:id", MenuController.GetMenuByID)
+	g.PATCH("/menu/:id", MenuController.UpdateMenu, middlewares.JWTMiddleware)
+	g.DELETE("/menu/:id", MenuController.DeleteMenu, middlewares.JWTMiddleware)
 }
